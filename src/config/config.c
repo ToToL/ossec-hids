@@ -33,6 +33,7 @@ static int read_main_elements(const OS_XML *xml, int modules,
     const char *osrootcheck = "rootcheck";              /* Agent Config  */
     const char *osalerts = "alerts";                    /* Server Config */
     const char *osemailalerts = "email_alerts";         /* Server Config */
+    const char *ospreludealerts = "prelude_alerts";    /* Server Config */
     const char *osdbd = "database_output";              /* Server Config */
     const char *oscsyslogd = "syslog_output";           /* Server Config */
     const char *oscagentless = "agentless";             /* Server Config */
@@ -59,6 +60,10 @@ static int read_main_elements(const OS_XML *xml, int modules,
             }
         } else if (strcmp(node[i]->element, osemailalerts) == 0) {
             if ((modules & CMAIL) && (Read_EmailAlerts(chld_node, d1, d2) < 0)) {
+                goto fail;
+            }
+        } else if (strcmp(node[i]->element, ospreludealerts) == 0) {
+            if ((modules & CPRELUDE) && (Read_PreludeAlerts(chld_node, d1, d2) < 0)) {
                 goto fail;
             }
         } else if (strcmp(node[i]->element, osdbd) == 0) {

@@ -28,7 +28,6 @@ int GlobalConf(const char *cfgfile)
     Config.integrity = 8;
     Config.rootcheck = 8;
     Config.hostinfo = 8;
-    Config.prelude = 0;
     Config.zeromq_output = 0;
     Config.zeromq_output_uri = NULL;
     Config.zeromq_output_server_cert = NULL;

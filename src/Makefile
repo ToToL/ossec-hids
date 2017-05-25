@@ -11,13 +11,11 @@ MAXAGENTS?=2048
 PREFIX?=/var/ossec
 PG_CONFIG?=pg_config
 MY_CONFIG?=mysql_config
-PRELUDE_CONFIG?=libprelude-config
 OSSEC_GROUP?=ossec
 OSSEC_USER?=ossec
 OSSEC_USER_MAIL?=ossecm
 OSSEC_USER_REM?=ossecr
 
-USE_PRELUDE?=no
 USE_ZEROMQ?=no
 USE_GEOIP?=no
 USE_INOTIFY=no
@@ -176,13 +174,6 @@ ifneq (,$(filter ${USE_INOTIFY},auto yes y Y 1))
 		OSSEC_CFLAGS+=-I/usr/local/include
 	endif
 endif
-
-ifneq (,$(filter ${USE_PRELUDE},auto yes y Y 1))
-	DEFINES+=-DPRELUDE_OUTPUT_ENABLED
-	OSSEC_LDFLAGS+=-lprelude
-	OSSEC_LDFLAGS+=$(shell sh -c '${PRELUDE_CONFIG} --pthread-cflags')
-	OSSEC_LDFLAGS+=$(shell sh -c '${PRELUDE_CONFIG} --libs')
-endif # USE_PRELUDE
 
 ifneq (,$(filter ${USE_ZEROMQ},auto yes y Y 1))
 	DEFINES+=-DZEROMQ_OUTPUT_ENABLED
@@ -434,6 +425,7 @@ install-server-generic: install-common
 	install -m 0550 -o root -g 0 ossec-monitord ${PREFIX}/bin
 	install -m 0550 -o root -g 0 ossec-reportd ${PREFIX}/bin
 	install -m 0550 -o root -g 0 ossec-maild ${PREFIX}/bin
+	install -m 0550 -o root -g 0 ossec-prelude ${PREFIX}/bin
 	install -m 0550 -o root -g 0 ossec-remoted ${PREFIX}/bin
 	install -m 0550 -o root -g 0 ossec-logtest ${PREFIX}/bin
 	install -m 0550 -o root -g 0 ossec-csyslogd ${PREFIX}/bin
@@ -528,7 +520,6 @@ settings:
 	@echo "USE settings:"
 	@echo "    USE_ZEROMQ:       ${USE_ZEROMQ}"
 	@echo "    USE_GEOIP:        ${USE_GEOIP}"
-	@echo "    USE_PRELUDE:      ${USE_PRELUDE}"
 	@echo "    USE_OPENSSL:      ${USE_OPENSSL}"
 	@echo "    USE_INOTIFY:      ${USE_INOTIFY}"
 	@echo "Mysql settings:"
@@ -548,6 +539,7 @@ settings:
 
 BUILD_SERVER+=external
 BUILD_SERVER+=ossec-maild
+BUILD_SERVER+=ossec-prelude
 BUILD_SERVER+=ossec-csyslogd
 BUILD_SERVER+=ossec-agentlessd
 BUILD_SERVER+=ossec-execd
@@ -784,6 +776,21 @@ os_crypto.a: ${crypto_o}
 	${OSSEC_LINK} $@ $^
 	${OSSEC_RANLIB} $@
 
+
+#### os_prelude #########
+
+os_prelude_c := $(wildcard os_prelude/*.c)
+os_prelude_o := $(os_prelude_c:.c=.o)
+
+PRELUDE_LDFLAGS=-lprelude
+PRELUDE_LDFLAGS+=$(shell sh -c '${PRELUDE_CONFIG} --pthread-cflags')
+PRELUDE_LDFLAGS+=$(shell sh -c '${PRELUDE_CONFIG} --libs')
+
+os_prelude/%.o: os_prelude/%.c
+	${OSSEC_CC} ${OSSEC_CFLAGS} -DARGV0=\"ossec-prelude\" -c $^ -o $@
+
+ossec-prelude: ${os_prelude_o} ${ossec_libs}
+	${OSSEC_CCBIN} ${OSSEC_CFLAGS} $^ ${OSSEC_LDFLAGS} ${PRELUDE_LDFLAGS} -o $@
 
 #### os_mail #########
 

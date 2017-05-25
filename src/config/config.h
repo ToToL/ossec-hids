@@ -19,6 +19,7 @@
 #define CREMOTE       0000100
 #define CCLIENT       0000200
 #define CMAIL         0000400
+#define CPRELUDE      0000600
 #define CAR           0001000
 #define CDBD          0002000
 #define CSYSLOGD      0004000
@@ -39,6 +40,7 @@ int Read_Syscheck(XML_NODE node, void *d1, void *d2);
 int Read_Rootcheck(XML_NODE node, void *d1, void *d2);
 int Read_Alerts(XML_NODE node, void *d1, void *d2);
 int Read_EmailAlerts(XML_NODE node, void *d1, void *d2);
+int Read_PreludeAlerts(XML_NODE node, void *d1, void *d2);
 int Read_DB(XML_NODE node, void *config1, void *config2);
 int Read_CSyslog(XML_NODE node, void *config1, void *config2);
 int Read_CAgentless(XML_NODE node, void *config1, void *config2);

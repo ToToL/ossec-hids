@@ -11,22 +11,11 @@
  * OSSEC to Prelude
  */
 
-#ifdef PRELUDE_OUTPUT_ENABLED
-
 #include <libprelude/prelude.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef-message-print.h>
 
 #include "prelude.h"
-
-#include "shared.h"
-#include "rules.h"
-
-#define DEFAULT_ANALYZER_NAME "OSSEC"
-#define ANALYZER_CLASS "Host IDS, File Integrity Checker, Log Analyzer"
-#define ANALYZER_MODEL "Ossec"
-#define ANALYZER_MANUFACTURER __site
-#define ANALYZER_VERSION __version
 
 /** OSSEC to prelude severity mapping. **/
 static const char *(ossec2prelude_sev[]) = {"info", "info", "info", "info",
@@ -93,25 +82,25 @@ setup_analyzer(idmef_analyzer_t *analyzer)
     if ( ret < 0 ) {
         goto err;
     }
-    prelude_string_set_constant(string, ANALYZER_MODEL);
+    prelude_string_set_constant(string, PRELUDE_ANALYZER_MODEL);
 
     ret = idmef_analyzer_new_class(analyzer, &string);
     if ( ret < 0 ) {
         goto err;
     }
-    prelude_string_set_constant(string, ANALYZER_CLASS);
+    prelude_string_set_constant(string, PRELUDE_ANALYZER_CLASS);
 
     ret = idmef_analyzer_new_manufacturer(analyzer, &string);
     if ( ret < 0 ) {
         goto err;
     }
-    prelude_string_set_constant(string, ANALYZER_MANUFACTURER);
+    prelude_string_set_constant(string, PRELUDE_ANALYZER_MANUFACTURER);
 
     ret = idmef_analyzer_new_version(analyzer, &string);
     if ( ret < 0 ) {
         goto err;
     }
-    prelude_string_set_constant(string, ANALYZER_VERSION);
+    prelude_string_set_constant(string, PRELUDE_ANALYZER_VERSION);
 
     return 0;
 
@@ -135,7 +124,7 @@ void prelude_start(const char *profile, int argc, char **argv)
     }
 
     ret = prelude_client_new(&prelude_client,
-                             profile != NULL ? profile : DEFAULT_ANALYZER_NAME);
+                             profile != NULL ? profile : PRELUDE_DEFAULT_ANALYZER_NAME);
     if (!prelude_client) {
         merror("%s: %s: Unable to create a prelude client object: %s.",
                ARGV0, prelude_strsource(ret), prelude_strerror(ret));
@@ -273,7 +262,7 @@ static void FileAccess_PreludeLog(idmef_message_t *idmef,
     return;
 }
 
-void OS_PreludeLog(const Eventinfo *lf)
+void OS_PreludeLog(alert_data *lf)
 {
     int ret;
     char _prelude_data[256];
@@ -519,6 +508,3 @@ void OS_PreludeLog(const Eventinfo *lf)
     debug1("%s: DEBUG: destroying IDMEF alert", ARGV0);
     idmef_message_destroy(idmef);
 }
-
-#endif /* PRELUDE_OUTPUT_ENABLED */
-
